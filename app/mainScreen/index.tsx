@@ -378,7 +378,7 @@ const brownMapStyle = [
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#7f7a64"  // Lighter brownish color for transit
+        "color": "#7f7a64"  
       }
     ]
   },
@@ -387,7 +387,7 @@ const brownMapStyle = [
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#a89e89"  // A warm brownish tone for water bodies
+        "color": "#a89e89"  
       }
     ]
   },
@@ -396,7 +396,7 @@ const brownMapStyle = [
     "elementType": "labels.text.fill",
     "stylers": [
       {
-        "color": "#d1c6b0"  // Lighter beige for water labels
+        "color": "#d1c6b0"  
       }
     ]
   }
