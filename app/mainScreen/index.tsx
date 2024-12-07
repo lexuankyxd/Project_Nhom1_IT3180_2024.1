@@ -18,6 +18,7 @@ import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import FriendScreen from "./friendScreen";
 import EveryoneScreen from "./everyoneScreen";
 import MeScreen from "./meScreen";
+import { useRouter } from "expo-router";
 
 
 const { width, height: screenHeight } = Dimensions.get("window");
@@ -113,6 +114,8 @@ const MainScreen = () => {
     { key: "everyone", title: "Everyone" },
   ]);
 
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <View style={styles.containerHeader}>
@@ -130,7 +133,7 @@ const MainScreen = () => {
           <AntDesign name="down" style={styles.everyoneTextContent} />
           <Text style={styles.everyoneTextContent}>Everyone</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push("/mainScreen/message")}>
           <View style={styles.mailOutlineContainer}>
             <Ionicons name="mail-outline" style={styles.mailOutline} />
           </View>
