@@ -7,7 +7,6 @@ const client = new Client({
   port: "5432",
   database: "panc",
 });
-await client.connect();
 const account_insert =
   'insert into account ("phone_number", "email", "password_hash", "user_profile", "username") values ($1, $2, $3, $4, $5)';
 const comment_insert =
@@ -42,6 +41,17 @@ export async function insertAccountToPSQL(
     console.log("Account insertion failed", error);
     throw error;
   }
+}
+
+export async function retrieveLoginDetails(account_id) {
+  const res = await client.query(
+    "select * from account where account_id = " + account_id,
+  );
+  return res;
+}
+
+export async function connectPSQL() {
+  await client.connect();
 }
 
 export async function disconnectPSQL() {

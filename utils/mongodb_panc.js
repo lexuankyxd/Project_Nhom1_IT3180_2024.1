@@ -42,7 +42,7 @@ const ProfileSchema = new mongoose.Schema(
           },
         },
       ],
-      required: true,
+      default: [],
     },
   },
   { timestamps: true },
@@ -62,13 +62,12 @@ export async function createProfile(
       city,
       description,
       imageId,
-      profileTags,
     });
     const savedProfile = await profile.save();
     return savedProfile;
   } catch (error) {
     console.log("Error at creating profile process: ", error);
-    return null;
+    throw Error("mongo upload error");
   }
 }
 
