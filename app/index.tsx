@@ -1,17 +1,17 @@
-import { router, useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import CheckLoginCondition from '@/components/checkLoginCondition';
+import CheckIfUserTokenExist from '@/components/systemComponents/checkIfUserTokenExist';
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 function Index() {
   const router = useRouter();
 
   useEffect(() => {
-    const condition = CheckLoginCondition();
-    setTimeout(() => {
-      if (condition == true) {
-        router.push('/mainScreen');
+    setTimeout(async () => {
+      if (await CheckIfUserTokenExist()) {
+        router.push('/loginScreen/adreadyLoginScreen');
       } else {
-        router.push('/mainScreen');
+        router.push('/loginScreen/notLoginScreen');
       }
     }, 100);
   }, []); 

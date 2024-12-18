@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import * as Font from 'expo-font';
+import LoginWithUsernameAndPassword from '@/components/apiComponents/loginWithUsernameAndPassword';
 
 const { width, height } = Dimensions.get('window');
 
@@ -45,9 +46,13 @@ export default function notLoginScreen() {
         onChangeText={setPassword}
       />
       
-      <TouchableOpacity style={styles.button} onPress={() => console.log('Sign In Pressed')}>
-        <Text style={styles.buttonTextSignIn}>SIGN IN</Text>
-      </TouchableOpacity>
+      <TouchableOpacity 
+  style={styles.button} 
+  onPress={async () => {
+    const reply = LoginWithUsernameAndPassword(username, password);
+  }}>
+  <Text style={styles.buttonTextSignIn}>SIGN IN</Text>
+</TouchableOpacity>
 
       <TouchableOpacity>
         <Text style={styles.forgotPassword}>Forgot your password?</Text>
