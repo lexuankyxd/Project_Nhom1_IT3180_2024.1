@@ -1,0 +1,18 @@
+Bài tập: Cho t/h 4-PAM
+
+      -3a    -a     a     3a
+      ----------------------
+      S1     S2     S3    S4
+
+(a) Gán nhãn Gray cho chòm sao điều chế trên
+(b) Định nghĩa vùng Voro.. , tính xác suất lỗi của hệ thống r = s + a biết n ~ (0, n0 / 2)
+(c) Giả sử gán nhãn Gray, tính xác suất lỗi Ps(e) và Pb(e) khi Eb/ r0 -> oo
+(d) Giả sử gán nhãn Gray, tính xác suất lỗi Pb(e) trong bài 9. So sánh Pb(e) và Pb(e)
+
+Bài 6: Xác suất lỗi bit 
+
+
+
+
+
+Gán nhãn Gray. S1 <-> 
