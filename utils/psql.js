@@ -62,10 +62,85 @@ export async function retrieveLoginDetails(login) {
   return res.rows;
 }
 
+export async function checkIfAccountExists(account_id) {
+  const res = await client.query(
+    "select account_id from account where account_id = $1",
+    [account_id],
+  );
+  return res.rows.length == 1;
+}
+
 export async function connectPSQL() {
   await client.connect();
 }
 
 export async function disconnectPSQL() {
   await client.end();
+}
+
+export async function findUserById(account_id) {
+  const res = await client.query(
+    "select account_id, username, email, phone_number from account where account_id = $1",
+    [account_id],
+  );
+  return res.rows;
+}
+
+export async function addFriendRelationship(user1_id, user2_id) {
+  await client.connect();
+  try {
+    await client.query('BEGIN');
+    const insertQuery = `
+      INSERT INTO public.friend (user1_id, user2_id, created_at)
+      VALUES ($1, $2, CURRENT_TIMESTAMP)
+      ON CONFLICT (user1_id, user2_id) DO NOTHING
+    `;
+    await client.query(insertQuery, [user1_id, user2_id]);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error adding friend relationship:', error);
+  } finally {
+    client.release();
+  }
+}
+
+export async function removeFriendRelationship(user1_id, user2_id) {
+  await client.connect();
+  try {
+    await client.query('BEGIN');
+    const deleteQuery = `
+      DELETE FROM public.friend
+      WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)
+    `;
+    await client.query(deleteQuery, [user1_id, user2_id]);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error removing friend relationship:', error);
+  } finally {
+    client.release();
+  }
+}
+
+export async function insertMessageToPSQL(
+  sender_id,
+  receiver_id,
+  message_content
+) {
+  
+  try {
+    await client.query('BEGIN');
+    const insertQuery = `
+      INSERT INTO public.message (from_user, to_user, content, created_at)
+      VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+    `;
+    await client.query(insertQuery, [sender_id, receiver_id, message_content]);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error send message:', error);
+  } finally {
+    client.release();
+  }
 }

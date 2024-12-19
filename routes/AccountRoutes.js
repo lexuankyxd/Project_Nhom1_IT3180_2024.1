@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import { hashPassword, verifyPassword } from "../utils/passwordHasher.js";
-import { insertAccountToPSQL } from "../utils/psql.js";
+import { insertAccountToPSQL, checkIfAccountExists } from "../utils/psql.js";
 import { createProfile, deleteProfile } from "../utils/mongodb_panc.js";
 import { upload } from "../utils/receiveImageFromReq.js";
 import { uploadToBucket, deleteFromBucket } from "../utils/s3bucket.js";
@@ -9,6 +9,7 @@ import { retrieveLoginDetails } from "../utils/psql.js";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { randomBytes } from "crypto";
+import { protect } from "../utils/authenticator.js";
 dotenv.config();
 
 const router = express.Router();
@@ -116,5 +117,102 @@ router.get("/login", async (req, res) => {
   }
 });
 
-router.get("/renewToken", async (req, res) => {});
+router.get("/renewToken", protect, async (req, res) => {
+  const { account_id } = req.body;
+  if (!checkIfAccountExists(account_id))
+    return res
+      .status(400)
+      .json({ message: "Account doesn't exist or account deleted" });
+  res.status(200).json({ token: "hi" });
+});
+
+
+
+
+// Search User
+
+router.get("/getUserProfile", protect, async (req, res) => {
+  const _id = req.query;
+  try {
+    // Kiểm tra nếu thiếu thông tin đầu vào
+    if (_id == undefined) {
+      return res.status(400).json({ message: "Account id must not be empty" });
+    }
+
+    // Lấy thông tin hồ sơ người dùng từ MongoDB
+    const profile = await getProfile(_id);
+    if (!profile) {
+      return res
+        .status(404)
+        .json({ message: "Profile with this id doesn't exist" });
+    }
+
+    // Trả về thông tin người dùng đích
+    res.status(200).json(profile);
+  } catch (error) {
+    console.error("Error in searchUser API:", error);
+    res.status(500).json({ message: "The server encountered internal error" });
+  }
+});
+
+// Add friend
+
+router.get("/addFen", protect, async (req, res) => {
+  const { user_id, friend_id} = req.query;
+  try {
+    // Kiểm tra nếu thiếu thông tin đầu vào
+    if (user_id == undefined) {
+      return res.status(400).json({ success: false, message: "Your ID must not be empty" });
+    }
+    if (friend_id == undefined) {
+      return res.status(400).json({ success: false, message: "Friend's ID must not be empty" });
+    }
+
+    // Tìm người dùng đích từ PostgreSQL
+    const friend = await findUserById(friend_id);
+    if (!friend) {
+      return res.status(404).json({ success: false, message: "Friend does not exist or is deleted" });
+    }
+
+    // Thêm quan hệ bạn bè vào cơ sở dữ liệu
+    const result = await addFriendRelationship(user_id, friend_id);
+    if (!result) {
+      return res.status(500).json({ success: false, message: "Unable to add friend relationship" });
+    }
+
+    // Thành công
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error in addFen API:", error);
+    res.status(500).json({ success: false, message: "The server encountered an internal error" });
+  }
+});
+
+// Remove friend
+
+router.get("/removeFen", protect, async (req, res) => {
+  const { user_id, friend_id} = req.query;
+  try {
+    // Kiểm tra nếu thiếu thông tin đầu vào
+    if (user_id == undefined) {
+      return res.status(400).json({ success: false, message: "Your ID must not be empty" });
+    }
+    if (friend_id == undefined) {
+      return res.status(400).json({ success: false, message: "Friend's ID must not be empty" });
+    }
+
+    // Xóa quan hệ bạn bè khỏi cơ sở dữ liệu
+    const result = await removeFriendRelationship(user_id, friend_id);
+    if (!result) {
+      return res.status(500).json({ success: false, message: "Unable to add friend relationship" });
+    }
+
+    // Thành công
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error in removeFen API:", error);
+    res.status(500).json({ success: false, message: "The server encountered an internal error" });
+  }
+});
+
 export default router;

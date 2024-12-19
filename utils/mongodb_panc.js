@@ -110,3 +110,13 @@ export async function disconnectMongoDB() {
     mongoose.connection.close();
   } catch (error) {}
 }
+
+export async function getProfile({ _id: id }) {
+  try {
+    const profile = await Profile.findById(id);
+    return profile;
+  } catch (error) {
+    console.log("Error at getting user profile process: ", error);
+    return null;
+  }
+}
