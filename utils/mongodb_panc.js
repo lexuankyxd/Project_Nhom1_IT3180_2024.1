@@ -42,7 +42,7 @@ const ProfileSchema = new mongoose.Schema(
           },
         },
       ],
-      required: true,
+      default: [],
     },
   },
   { timestamps: true },
@@ -62,7 +62,6 @@ export async function createProfile(
       city,
       description,
       imageId,
-      profileTags,
     });
     const savedProfile = await profile.save();
     return savedProfile;
@@ -110,4 +109,14 @@ export async function disconnectMongoDB() {
   try {
     mongoose.connection.close();
   } catch (error) {}
+}
+
+export async function getProfile({ _id: id }) {
+  try {
+    const profile = await Profile.findById(id);
+    return profile;
+  } catch (error) {
+    console.log("Error at getting user profile process: ", error);
+    return null;
+  }
 }

@@ -11,7 +11,6 @@ const S3_BUCKET = process.env.S3_BUCKET;
 const AWS_REGION = process.env.AWS_REGION;
 const ACCESS_KEY = process.env.ACCESS_KEY;
 const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY;
-const CLOUDFRONT_DIST = process.env.CLOUDFRONT_DIST;
 const s3 = new S3Client({
   credentials: {
     accessKeyId: ACCESS_KEY,
@@ -34,9 +33,10 @@ export async function uploadToBucket(buffer, name, type) {
   const command = new PutObjectCommand(params);
   try {
     await s3.send(command);
-    return CLOUDFRONT_DIST + key;
+    return key;
   } catch (err) {
     console.log("Error when uploading to bucket", err);
+    return null;
   }
 }
 
