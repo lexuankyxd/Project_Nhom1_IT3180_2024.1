@@ -36,7 +36,7 @@ export async function uploadToBucket(buffer, name, type) {
     return key;
   } catch (err) {
     console.log("Error when uploading to bucket", err);
-    throw Error("bucket upload error");
+    return null;
   }
 }
 

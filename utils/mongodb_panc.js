@@ -67,7 +67,7 @@ export async function createProfile(
     return savedProfile;
   } catch (error) {
     console.log("Error at creating profile process: ", error);
-    throw Error("mongo upload error");
+    return null;
   }
 }
 

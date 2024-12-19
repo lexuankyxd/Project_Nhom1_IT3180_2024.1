@@ -37,17 +37,29 @@ export async function insertAccountToPSQL(
       user_profile,
       username,
     ]);
+    return 0;
   } catch (error) {
     console.log("Account insertion failed", error);
-    throw error;
+
+    switch (error.constraint) {
+      case "unique_phonenumber":
+        return 1;
+      case "unique_email":
+        return 2;
+      case "unique_username":
+        return 3;
+      default:
+        return null; // or any other default action you want to take
+    }
   }
 }
 
-export async function retrieveLoginDetails(account_id) {
+export async function retrieveLoginDetails(login) {
   const res = await client.query(
-    "select * from account where account_id = " + account_id,
+    "select account_id, username, email, phone_number, password_hash from account where username = $1 or email = $1 or phone_number = $1",
+    [login],
   );
-  return res;
+  return res.rows;
 }
 
 export async function connectPSQL() {

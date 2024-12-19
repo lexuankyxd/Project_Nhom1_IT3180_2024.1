@@ -5,11 +5,12 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import AccountRoutes from "./routes/AccountRoutes.js";
+import { connectPSQL } from "./utils/psql.js";
 const app = express();
 app.use(bodyParser.json());
 dotenv.config();
 const PORT = process.env.PORT;
-
+connectPSQL();
 app.use("/account", AccountRoutes);
 
 app.listen(PORT, () => {
