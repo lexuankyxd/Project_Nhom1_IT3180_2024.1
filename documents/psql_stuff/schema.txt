@@ -56,7 +56,7 @@ ALTER TABLE public.account OWNER TO postgres;
 
 CREATE TABLE public.comment (
     comment_id bigint NOT NULL,
-    user_id bigint,
+    profile_id bigint,
     post_id bigint,
     reply_comment bigint,
     content character varying(100),
@@ -114,7 +114,7 @@ ALTER TABLE public.friend_request OWNER TO postgres;
 --
 
 CREATE TABLE public.liked (
-    user_id bigint NOT NULL,
+    profile_id bigint NOT NULL,
     post_id bigint NOT NULL
 );
 
@@ -136,12 +136,26 @@ CREATE TABLE public.message (
 ALTER TABLE public.message OWNER TO postgres;
 
 --
+-- Name: posts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.posts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.posts_id_seq OWNER TO postgres;
+
+--
 -- Name: post; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.post (
-    post_id bigint NOT NULL,
-    account_id bigint,
+    post_id bigint DEFAULT nextval('public.posts_id_seq'::regclass) NOT NULL,
+    profile_id bigint,
     comment_count integer DEFAULT 0,
     like_count integer DEFAULT 0,
     content character varying(200),
@@ -194,7 +208,7 @@ ALTER TABLE ONLY public.event
 --
 
 ALTER TABLE ONLY public.liked
-    ADD CONSTRAINT liked_pkey PRIMARY KEY (user_id, post_id);
+    ADD CONSTRAINT liked_pkey PRIMARY KEY (profile_id, post_id);
 
 
 --
@@ -278,14 +292,6 @@ ALTER TABLE ONLY public.comment
 
 
 --
--- Name: comment comment_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.comment
-    ADD CONSTRAINT comment_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.account(account_id);
-
-
---
 -- Name: event event_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -299,22 +305,6 @@ ALTER TABLE ONLY public.event
 
 ALTER TABLE ONLY public.liked
     ADD CONSTRAINT liked_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.post(post_id);
-
-
---
--- Name: liked liked_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.liked
-    ADD CONSTRAINT liked_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.account(account_id);
-
-
---
--- Name: post post_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.post
-    ADD CONSTRAINT post_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.account(account_id);
 
 
 --

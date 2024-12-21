@@ -130,10 +130,6 @@ router.get("/login", async (req, res) => {
 });
 
 router.get("/loginByToken", protect, async (req, res) => {
-  res.status(200).json({ message: "Valid token" });
-});
-
-router.get("/renewToken", protect, async (req, res) => {
   const account_id = req.body.account_id;
   if (!checkIfAccountExists(account_id))
     return res
@@ -181,10 +177,19 @@ router.get("/loadInitialState", protect, async (req, res) => {
     const account = (await getAccount(account_id))[0];
     const profile = await getProfile(account.user_profile);
     const myPost = await getAccountPost(account_id);
-    const getFeed = await getPosts();
+    const myFeed = await getPosts();
     const friends = await getAllFriends(account.user_profile);
     const friend_reqs = await getAllFriendRequests(account.user_profile);
     const messages = await getAndDeleteAllMessage(account.user_profile);
+    res.status(200).json({
+      account,
+      profile,
+      myPost,
+      myFeed,
+      friends,
+      friend_reqs,
+      messages,
+    });
   } catch (error) {
     console.log("Error: ", error);
     res.status(500).json({ message: "The server encountered internal error" });

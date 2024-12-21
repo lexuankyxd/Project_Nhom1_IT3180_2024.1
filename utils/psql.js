@@ -172,7 +172,7 @@ export async function removeFriendRequest(sender_id, receiver_id) {
   }
 }
 
-async function checkIfIsFriend(user1, user2) {
+export async function checkIfIsFriend(user1, user2) {
   try {
     var u1, u2;
     if (user1 == user2) return -1;
@@ -190,7 +190,7 @@ async function checkIfIsFriend(user1, user2) {
   }
 }
 
-async function checkIfPostExists(post_id) {
+export async function checkIfPostExists(post_id) {
   try {
     const res = await client.query("select * from post where post_id = $1", [
       post_id,

@@ -16,7 +16,7 @@ const PORT = process.env.PORT;
 connectPSQL();
 
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+export const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
   console.log("New client connected");
