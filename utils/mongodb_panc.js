@@ -106,10 +106,9 @@ export async function deleteProfile(id) {
   }
 }
 
-export async function getProfile(id) {
+export async function getProfile(_id) {
   try {
-    const profile = await Profile.find({ _id: id });
-    console.log("Profile", profile);
+    const profile = await Profile.findById(_id);
     return profile;
   } catch (error) {
     console.log(error);

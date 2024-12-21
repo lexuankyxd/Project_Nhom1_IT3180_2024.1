@@ -339,10 +339,10 @@ export async function getPosts() {
   }
 }
 
-export async function getAccountPost(account_id) {
+export async function getAccountPost(profile_id) {
   try {
-    const res = await client.query("select * from post where account_id = $1", [
-      account_id,
+    const res = await client.query("select * from post where profile_id = $1", [
+      profile_id,
     ]);
     return res.rows;
   } catch (error) {

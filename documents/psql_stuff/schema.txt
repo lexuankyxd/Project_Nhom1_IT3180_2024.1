@@ -51,12 +51,26 @@ CREATE TABLE public.account (
 ALTER TABLE public.account OWNER TO postgres;
 
 --
+-- Name: comments_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.comments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.comments_id_seq OWNER TO postgres;
+
+--
 -- Name: comment; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.comment (
-    comment_id bigint NOT NULL,
-    profile_id bigint,
+    comment_id bigint DEFAULT nextval('public.comments_id_seq'::regclass) NOT NULL,
+    profile_id character(24),
     post_id bigint,
     reply_comment bigint,
     content character varying(100),
@@ -88,8 +102,8 @@ ALTER TABLE public.event OWNER TO postgres;
 --
 
 CREATE TABLE public.friend (
-    user1 character varying(24) NOT NULL,
-    user2 character varying(24) NOT NULL,
+    user1 character(24) NOT NULL,
+    user2 character(24) NOT NULL,
     "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -101,8 +115,8 @@ ALTER TABLE public.friend OWNER TO postgres;
 --
 
 CREATE TABLE public.friend_request (
-    sender character varying(24) NOT NULL,
-    receiver character varying(24) NOT NULL,
+    sender character(24) NOT NULL,
+    receiver character(24) NOT NULL,
     "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -114,7 +128,7 @@ ALTER TABLE public.friend_request OWNER TO postgres;
 --
 
 CREATE TABLE public.liked (
-    profile_id bigint NOT NULL,
+    profile_id character(24) NOT NULL,
     post_id bigint NOT NULL
 );
 
@@ -126,8 +140,8 @@ ALTER TABLE public.liked OWNER TO postgres;
 --
 
 CREATE TABLE public.message (
-    to_user character varying(24),
-    from_user character varying(24),
+    to_user character(24),
+    from_user character(24),
     content character varying(500) NOT NULL,
     sent_time timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
@@ -155,7 +169,7 @@ ALTER SEQUENCE public.posts_id_seq OWNER TO postgres;
 
 CREATE TABLE public.post (
     post_id bigint DEFAULT nextval('public.posts_id_seq'::regclass) NOT NULL,
-    profile_id bigint,
+    profile_id character(24),
     comment_count integer DEFAULT 0,
     like_count integer DEFAULT 0,
     content character varying(200),
@@ -172,7 +186,7 @@ ALTER TABLE public.post OWNER TO postgres;
 --
 
 CREATE TABLE public.saved_post (
-    user_id bigint NOT NULL,
+    profile_id character(24) NOT NULL,
     post_id bigint NOT NULL
 );
 
@@ -224,7 +238,7 @@ ALTER TABLE ONLY public.post
 --
 
 ALTER TABLE ONLY public.saved_post
-    ADD CONSTRAINT saved_post_pkey PRIMARY KEY (user_id, post_id);
+    ADD CONSTRAINT saved_post_pkey PRIMARY KEY (profile_id, post_id);
 
 
 --
@@ -313,14 +327,6 @@ ALTER TABLE ONLY public.liked
 
 ALTER TABLE ONLY public.saved_post
     ADD CONSTRAINT saved_post_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.post(post_id);
-
-
---
--- Name: saved_post saved_post_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.saved_post
-    ADD CONSTRAINT saved_post_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.account(account_id);
 
 
 --
