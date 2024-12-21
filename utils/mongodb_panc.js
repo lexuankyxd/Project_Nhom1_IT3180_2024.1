@@ -105,6 +105,17 @@ export async function deleteProfile(id) {
     return false;
   }
 }
+
+export async function getProfile(id) {
+  try {
+    const profile = await Profile.find({ _id: id });
+    console.log("Profile", profile);
+    return profile;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export async function disconnectMongoDB() {
   try {
     mongoose.connection.close();

@@ -88,9 +88,9 @@ ALTER TABLE public.event OWNER TO postgres;
 --
 
 CREATE TABLE public.friend (
-    user1_id bigint NOT NULL,
-    user2_id bigint NOT NULL,
-    "timestamp" time without time zone
+    user1 character varying(24) NOT NULL,
+    user2 character varying(24) NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -101,8 +101,8 @@ ALTER TABLE public.friend OWNER TO postgres;
 --
 
 CREATE TABLE public.friend_request (
-    receiver_id bigint NOT NULL,
-    sender_id bigint NOT NULL,
+    sender character varying(24) NOT NULL,
+    receiver character varying(24) NOT NULL,
     "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -126,9 +126,9 @@ ALTER TABLE public.liked OWNER TO postgres;
 --
 
 CREATE TABLE public.message (
-    to_user bigint,
-    from_user bigint,
-    content character varying(500),
+    to_user character varying(24),
+    from_user character varying(24),
+    content character varying(500) NOT NULL,
     sent_time timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -190,22 +190,6 @@ ALTER TABLE ONLY public.event
 
 
 --
--- Name: friend friend_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.friend
-    ADD CONSTRAINT friend_pkey PRIMARY KEY (user1_id, user2_id);
-
-
---
--- Name: friend_request friend_request_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.friend_request
-    ADD CONSTRAINT friend_request_pkey PRIMARY KEY (receiver_id, sender_id);
-
-
---
 -- Name: liked liked_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -246,6 +230,30 @@ ALTER TABLE ONLY public.account
 
 
 --
+-- Name: account unique_profile; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.account
+    ADD CONSTRAINT unique_profile UNIQUE (user_profile);
+
+
+--
+-- Name: friend unique_rela; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.friend
+    ADD CONSTRAINT unique_rela UNIQUE (user1, user2);
+
+
+--
+-- Name: friend_request unique_req; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.friend_request
+    ADD CONSTRAINT unique_req UNIQUE (sender, receiver);
+
+
+--
 -- Name: account unique_username; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -283,54 +291,6 @@ ALTER TABLE ONLY public.comment
 
 ALTER TABLE ONLY public.event
     ADD CONSTRAINT event_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.account(account_id);
-
-
---
--- Name: message fk_from_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.message
-    ADD CONSTRAINT fk_from_user FOREIGN KEY (from_user) REFERENCES public.account(account_id);
-
-
---
--- Name: message fk_to_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.message
-    ADD CONSTRAINT fk_to_user FOREIGN KEY (to_user) REFERENCES public.account(account_id);
-
-
---
--- Name: friend_request friend_request_receiver_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.friend_request
-    ADD CONSTRAINT friend_request_receiver_id_fkey FOREIGN KEY (receiver_id) REFERENCES public.account(account_id);
-
-
---
--- Name: friend_request friend_request_sender_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.friend_request
-    ADD CONSTRAINT friend_request_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.account(account_id);
-
-
---
--- Name: friend friend_user1_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.friend
-    ADD CONSTRAINT friend_user1_id_fkey FOREIGN KEY (user1_id) REFERENCES public.account(account_id);
-
-
---
--- Name: friend friend_user2_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.friend
-    ADD CONSTRAINT friend_user2_id_fkey FOREIGN KEY (user2_id) REFERENCES public.account(account_id);
 
 
 --

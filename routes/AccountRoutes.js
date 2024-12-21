@@ -1,14 +1,27 @@
 import express from "express";
-import bodyParser from "body-parser";
 import { hashPassword, verifyPassword } from "../utils/passwordHasher.js";
-import { insertAccountToPSQL } from "../utils/psql.js";
-import { createProfile, deleteProfile } from "../utils/mongodb_panc.js";
+import {
+  insertAccountToPSQL,
+  checkIfAccountExists,
+  getAccount,
+  getAndDeleteAllMessage,
+  getAccountPost,
+  getAllFriends,
+  getAllFriendRequests,
+  getPosts,
+} from "../utils/psql.js";
+import {
+  createProfile,
+  deleteProfile,
+  getProfile,
+} from "../utils/mongodb_panc.js";
 import { upload } from "../utils/receiveImageFromReq.js";
 import { uploadToBucket, deleteFromBucket } from "../utils/s3bucket.js";
 import { retrieveLoginDetails } from "../utils/psql.js";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { randomBytes } from "crypto";
+import { protect } from "../utils/authenticator.js";
 dotenv.config();
 
 const router = express.Router();
@@ -116,5 +129,66 @@ router.get("/login", async (req, res) => {
   }
 });
 
-router.get("/renewToken", async (req, res) => {});
+router.get("/loginByToken", protect, async (req, res) => {
+  res.status(200).json({ message: "Valid token" });
+});
+
+router.get("/renewToken", protect, async (req, res) => {
+  const account_id = req.body.account_id;
+  if (!checkIfAccountExists(account_id))
+    return res
+      .status(400)
+      .json({ message: "Account doesn't exist or account deleted" });
+  res.status(200).json({
+    token: jwt.sign(
+      {
+        account_id,
+        random: randomBytes(256).toString("base64"),
+      },
+      JWT_SECRET_KEY,
+      { expiresIn: "2w" },
+    ),
+  });
+});
+
+router.get("/getUserProfile", protect, async (req, res) => {
+  const _id = req.query;
+  try {
+    // Kiểm tra nếu thiếu thông tin đầu vào
+    if (_id == undefined) {
+      return res.status(400).json({ message: "Account id must not be empty" });
+    }
+
+    // Lấy thông tin hồ sơ người dùng từ MongoDB
+    const profile = await getProfile(_id);
+    if (!profile) {
+      return res
+        .status(404)
+        .json({ message: "Profile with this id doesn't exist" });
+    }
+
+    // Trả về thông tin người dùng đích
+    res.status(200).json(profile);
+  } catch (error) {
+    console.error("Error in get user API:", error);
+    res.status(500).json({ message: "The server encountered internal error" });
+  }
+});
+
+router.get("/loadInitialState", protect, async (req, res) => {
+  const account_id = req.body.account_id;
+  try {
+    const account = (await getAccount(account_id))[0];
+    const profile = await getProfile(account.user_profile);
+    const myPost = await getAccountPost(account_id);
+    const getFeed = await getPosts();
+    const friends = await getAllFriends(account.user_profile);
+    const friend_reqs = await getAllFriendRequests(account.user_profile);
+    const messages = await getAndDeleteAllMessage(account.user_profile);
+  } catch (error) {
+    console.log("Error: ", error);
+    res.status(500).json({ message: "The server encountered internal error" });
+  }
+});
+
 export default router;

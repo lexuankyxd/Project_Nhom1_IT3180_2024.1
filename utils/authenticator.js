@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-const protect = async (req, res, next) => {
+export async function protect(req, res, next) {
   let token;
   // Kiểm tra token trong Authorization header
   if (
@@ -12,6 +12,7 @@ const protect = async (req, res, next) => {
 
       // Giải mã và lấy thông tin user từ token
       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      req.body.account_id = decoded.account_id;
       next(); // Cho phép tiếp tục vào route tiếp theo
     } catch (error) {
       console.error(error);
@@ -24,6 +25,4 @@ const protect = async (req, res, next) => {
   if (!token) {
     res.status(401).json({ message: "Không có token, yêu cầu xác thực" });
   }
-};
-
-module.exports = { protect: protect, adminProtect: adminProtect };
+}

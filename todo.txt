@@ -1,0 +1,1 @@
+set up websocket to enable communication between nodejs program and c++ program that manage locations and message.

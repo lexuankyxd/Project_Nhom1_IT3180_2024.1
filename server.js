@@ -1,18 +1,43 @@
 import express from "express";
 import bodyParser from "body-parser";
+import http from "http";
+import { WebSocketServer } from "ws";
 import path from "path";
 import cors from "cors";
 import dotenv from "dotenv";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import AccountRoutes from "./routes/AccountRoutes.js";
+import MessageRoutes from "./routes/MessageRoutes.js";
 import { connectPSQL } from "./utils/psql.js";
 const app = express();
 app.use(bodyParser.json());
 dotenv.config();
 const PORT = process.env.PORT;
 connectPSQL();
-app.use("/account", AccountRoutes);
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+
+wss.on("connection", (ws) => {
+  console.log("New client connected");
+  console.log(wss.clients);
+  ws.send("hi<3");
+  // Handle incoming messages from clients
+  ws.on("message", (message) => {
+    console.log(`Received: ${message}`);
+
+    // Echo the message back to the client
+    ws.send(`Hello, you sent -> ${message}`);
+  });
+
+  // Handle client disconnection
+  ws.on("close", () => {
+    console.log("Client disconnected");
+  });
+});
+
+app.use("/account", AccountRoutes);
+app.use("/message", MessageRoutes);
+server.listen(PORT, () => {
   console.log(`Server đang chạy trên cổng ${PORT}`);
 });
