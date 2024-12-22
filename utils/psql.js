@@ -64,7 +64,7 @@ export async function retrieveLoginDetails(login) {
 
 export async function getAccount(account_id) {
   const res = await client.query(
-    "select account_id from account where account_id = $1",
+    "select * from account where account_id = $1",
     [account_id],
   );
   return res.rows;
@@ -117,6 +117,7 @@ export async function acceptFriend(sender_id, receiver_id) {
       "select * from friend_request where sender = $1 and receiver = $2;",
       [sender_id, receiver_id],
     );
+    console.log();
     if (res.rows.length == 0) return -1;
     await client.query(
       "delete from friend_request where sender = $1 and receiver = $2;",
@@ -143,7 +144,7 @@ export async function rejectFriend(sender_id, receiver_id) {
     await client.query("BEGIN");
     const deleteQuery = `
       DELETE FROM friend_request
-      WHERE (sender_id = $1 AND receiver_id = $2);`;
+      WHERE (sender = $1 AND receiver = $2);`;
     await client.query(deleteQuery, [sender_id, receiver_id]);
     await client.query("COMMIT");
   } catch (error) {
@@ -153,7 +154,7 @@ export async function rejectFriend(sender_id, receiver_id) {
   }
 }
 
-export async function removeFriendRequest(sender_id, receiver_id) {
+export async function removeFriend(sender_id, receiver_id) {
   try {
     await client.query("BEGIN");
     var u1, u2;
@@ -224,9 +225,9 @@ export async function insertCommentToPSQL(profile_id, post_id, content) {
   try {
     await client.query("BEGIN");
     const commentQuery = `
-      insert into comment (profile_id, post_id, content) value ($1, $2, $3)
+      insert into comment (profile_id, post_id, content) values ($1, $2, $3);
     `;
-    await client.query(commentQuery, [user_id, post_id, content]);
+    await client.query(commentQuery, [profile_id, post_id, content]);
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
@@ -241,10 +242,9 @@ export async function insertReplyToPSQL(
   content,
 ) {
   try {
-    await client.query("BEGIN");
     await client.query(
       `
-      insert into comment (profile_id, post_id, reply_comment, content) value ($1, $2, $3)
+      insert into comment (profile_id, post_id, reply_comment, content) value ($1, $2, $3);
     `,
       [profile_id, comment_id, reply_comment, content],
     );
@@ -252,8 +252,7 @@ export async function insertReplyToPSQL(
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Error reply comment:", error);
-  } finally {
-    client.release();
+    return -1;
   }
 }
 
@@ -275,7 +274,7 @@ export async function likePost(profile_id, post_id) {
     `;
 
     await client.query(
-      "insert into liked (profile_id, post_id) value ($1, $2);",
+      "insert into liked (profile_id, post_id) values ($1, $2);",
       [profile_id, post_id],
     );
 
@@ -285,6 +284,7 @@ export async function likePost(profile_id, post_id) {
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Error like post:", error);
+    return -1;
   }
 }
 
@@ -306,7 +306,7 @@ export async function unlikePost(profile_id, post_id) {
     `;
 
     await client.query(
-      "delete from liked where profile_id = $1, post_id = $2;",
+      "delete from liked where profile_id = $1 and post_id = $2;",
       [profile_id, post_id],
     );
 
@@ -316,17 +316,7 @@ export async function unlikePost(profile_id, post_id) {
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Error like post:", error);
-  }
-}
-
-export async function getPost(post_id) {
-  try {
-    const res = await client.query("select * from post where post_id = $1", [
-      post_id,
-    ]);
-    return res.rows[0];
-  } catch (err) {
-    console.log("error", err);
+    return -1;
   }
 }
 
@@ -392,6 +382,81 @@ export async function getAllFriendRequests(profile_id) {
     return friend_reqs;
   } catch (error) {
     console.log(error);
+  }
+}
+
+export async function createPost(
+  profile_id,
+  content,
+  media,
+  latitude,
+  longitude,
+) {
+  try {
+    console.log(media.length);
+    await client.query("BEGIN");
+    await client.query(
+      "insert into post (profile_id, content, media, latitude, longitude) values ($1, $2, $3, $4, $5);",
+      [profile_id, content, media, latitude, longitude],
+    );
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.log(error);
+    return -1;
+  }
+}
+
+export async function findPostById(post_id) {
+  try {
+    const post = await client.query("select * from post where post_id = $1", [
+      post_id,
+    ]);
+    const comments = await client.query(
+      "select * from comment where post_id = $1",
+      [post_id],
+    );
+    post.rows[0].comments = comments.rows;
+    return post.rows[0];
+  } catch (err) {
+    console.log("error", err);
+  }
+}
+
+export async function savePost(post_id, profile_id) {
+  try {
+    await client.query(
+      "insert into saved_post (profile_id, post_id) values ($1, $2);",
+      [profile_id, post_id],
+    );
+  } catch (err) {
+    console.log(err);
+    return -1;
+  }
+}
+
+export async function unsavePost(post_id, profile_id) {
+  try {
+    await client.query(
+      "delete from saved_post where profile_id = $1 and post_id = $2;",
+      [profile_id, post_id],
+    );
+  } catch (err) {
+    console.log(err);
+    return -1;
+  }
+}
+
+export async function getAllSavedPost(profile_id) {
+  try {
+    return (
+      await client.query("select * from saved_post where profile_id = $1;", [
+        profile_id,
+      ])
+    ).rows;
+  } catch (error) {
+    console.log(error);
+    return -1;
   }
 }
 

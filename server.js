@@ -8,6 +8,9 @@ import dotenv from "dotenv";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import AccountRoutes from "./routes/AccountRoutes.js";
 import MessageRoutes from "./routes/MessageRoutes.js";
+import PostRoutes from "./routes/PostRoutes.js";
+import CommentRoutes from "./routes/CommentRoutes.js";
+import FriendRoutes from "./routes/FriendRoutes.js";
 import { connectPSQL } from "./utils/psql.js";
 const app = express();
 app.use(bodyParser.json());
@@ -38,6 +41,9 @@ wss.on("connection", (ws) => {
 
 app.use("/account", AccountRoutes);
 app.use("/message", MessageRoutes);
+app.use("/post", PostRoutes);
+app.use("/comment", CommentRoutes);
+app.use("/friend", FriendRoutes);
 server.listen(PORT, () => {
   console.log(`Server đang chạy trên cổng ${PORT}`);
 });

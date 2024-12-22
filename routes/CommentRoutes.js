@@ -4,6 +4,7 @@ import {
   checkIfAccountExists,
   findUserByProfileId,
   checkIfPostExists,
+  insertCommentToPSQL,
   getAccount,
 } from "../utils/psql.js";
 import { createProfile, deleteProfile } from "../utils/mongodb_panc.js";
@@ -36,16 +37,15 @@ router.post("/addComment", protect, async (req, res) => {
         .json({ message: "Post does not exist or is deleted" });
     }
     // Thêm comment vào cơ sở dữ liệu
-    const result = await insertCommentToPSQL(user_id, post_id, content);
-    if (!result) {
+    const result = await insertCommentToPSQL(profile_id, post_id, content);
+    if (result == -1) {
       return res.status(500).json({ message: "Unable to comment" });
     }
     // Thành công
-    res.status(200).json({ message: "Succeded" });
+    res.status(200).json({ message: "Success" });
   } catch (error) {
     console.error("Error in post comment API:", error);
     res.status(500).json({
-      success: false,
       message: "The server encountered an internal error",
     });
   }

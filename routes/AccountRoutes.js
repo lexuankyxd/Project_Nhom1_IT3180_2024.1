@@ -175,8 +175,9 @@ router.get("/loadInitialState", protect, async (req, res) => {
   const account_id = req.body.account_id;
   try {
     const account = (await getAccount(account_id))[0];
-    const profile = await getProfile(account.user_profile);
-    const myPost = await getAccountPost(account.profile_id);
+    const _id = account.user_profile;
+    const profile = await getProfile(_id);
+    const myPost = await getAccountPost(account.user_profile);
     const myFeed = await getPosts();
     const friends = await getAllFriends(account.user_profile);
     const friend_reqs = await getAllFriendRequests(account.user_profile);
