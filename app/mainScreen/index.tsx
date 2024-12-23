@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Image,
@@ -19,6 +19,9 @@ import FriendScreen from "./friendScreen";
 import EveryoneScreen from "./everyoneScreen";
 import MeScreen from "./meScreen";
 import { useRouter } from "expo-router";
+import loadInitialState from "@/components/apiComponents/loadInitialState";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/reduxFolder/store";
 
 
 const { width, height: screenHeight } = Dimensions.get("window");
@@ -28,7 +31,7 @@ const openModal = (slideAnim: any, setModalVisible: any) => {
   setModalVisible(true);
   Animated.timing(slideAnim, {
     toValue: menuHeight,
-    duration: 300,
+    duration: 100,
     useNativeDriver: false,
   }).start();
 };
@@ -36,75 +39,26 @@ const openModal = (slideAnim: any, setModalVisible: any) => {
 const closeModal = (slideAnim: any, setModalVisible: any) => {
   Animated.timing(slideAnim, {
     toValue: screenHeight,
-    duration: 300,
+    duration: 100,
     useNativeDriver: false,
   }).start(() => setModalVisible(false));
 };
 
-const friends = [
-  {
-    id: 1,
-    name: "Đặng Đức Khải",
-    description: "Qua dep trai, vcl :vv",
-    logo: "Capture2.png",
-    location: {
-      latitude: 38.78825,
-      longitude: -122.4324,
-    },
-    images: [
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-    ],
-    
-  },
-  {
-    id: 2,
-    name: "Alexander Manima",
-    description: "Hello bro",
-    logo: "Capture.png",
-    location: {
-      latitude: 32.78825,
-      longitude: -122.4325,
-    },
-    images: [
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100",
-      "https://via.placeholder.com/100"
-    ],
-  },
-];
 
-
-const MainScreen = () => {
+function MainScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+  const [loadStateStatus, setLoadStateStatus] = useState(false);
+  const dispatch = useDispatch();
 
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+  useEffect(() => {
+    loadInitialState(dispatch)
+  }, []);
+  
   const renderScene = SceneMap({
-    me: () => <MeScreen myPosts={friends[1].images} />,
-    friends: () => <FriendScreen listFriends={friends}/>,
-    everyone: () => <EveryoneScreen myPosts={friends[1].images}/>,
+    me: () => <MeScreen myPosts={useSelector((state: RootState) => state.userProfileSlice.myPost)} openModal={() => openModal(slideAnim, setModalVisible)}/>,
+    friends: () => <FriendScreen listFriends={useSelector((state: RootState) => state.userProfileSlice.friends)}/>,
+    everyone: () => <EveryoneScreen myPosts={useSelector((state: RootState) => state.userProfileSlice.myFeed)}/>,
   });
 
   const [index, setIndex] = useState(0);
@@ -119,7 +73,7 @@ const MainScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.containerHeader}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/mainScreen/myProfile')}>
           <Image
             style={styles.image}
             source={require("@/assets/images/laserEye.jpg")}
@@ -151,19 +105,23 @@ const MainScreen = () => {
           customMapStyle={brownMapStyle}
           mapType="standard"
         >
-          {friends.map((marker) => (
             <Marker
-              key={marker.id}
-              coordinate={marker.location}
-              title={marker.name}
-              description= {marker.description}
+              coordinate={{latitude: 37.78825, longitude: -122.4324}}
+              title="Demo1"
+              description= {"Hello everyone"}
               image={require(`@/assets/images/Capture2.png`)}
               />
-))}
+
+            <Marker
+              coordinate={{latitude: 37.9, longitude: -122.4324}}
+              title="Demo1"
+              description= {"Hello everyone"}
+              image={require(`@/assets/images/Capture.png`)}
+              />
         </MapView>
       </View>
       <TouchableOpacity>
-        <AntDesign name="pluscircleo" style={styles.floatingButton} />
+        <AntDesign name="pluscircleo" style={styles.floatingButton} onPress={() => {router.push('/cameraScreen')}}/>
       </TouchableOpacity>
       
       {/* ----------------------------------------------MENU------------------------------------------- */}
@@ -273,9 +231,6 @@ const stylesMenu = StyleSheet.create({
   tabView: {
     flex: 1,
   },
-  meAndEveryoneContainer: {
-
-  }
 })
 
 const renderTabBar = (props: any) => (

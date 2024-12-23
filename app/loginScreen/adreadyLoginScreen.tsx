@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
 import * as Font from 'expo-font';
+import loginWithUserToken from '@/components/apiComponents/loginWithUserToken';
+import { useRouter } from 'expo-router';
+import loadInitialState from '@/components/apiComponents/loadInitialState';
 
 const { width, height } = Dimensions.get('window');
 
 function AdreadyLoginScreen() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function loadFonts() {
@@ -27,7 +31,13 @@ function AdreadyLoginScreen() {
       />
       <Text style={styles.textTitle}>Welcome hzpro1221!</Text>
       
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} 
+        onPress={async () => {
+          const reply = await loginWithUserToken()
+          if (reply) {
+            router.push('/mainScreen')
+          }
+          }}>
         <Text style={styles.buttonText}>SIGN IN</Text>
       </TouchableOpacity>
     </View>
@@ -39,7 +49,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fffff3',
+    backgroundColor: '#fff',
     padding: 20,
   },
 

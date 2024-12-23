@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Image, StyleSheet, FlatList, Dimensions, Text } from "react-native";
+import { View, Image, StyleSheet, FlatList, Dimensions, Text, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 
 interface FriendScreenProps {
   listFriends: any; 
@@ -9,8 +10,8 @@ const { width } = Dimensions.get("window");
 
 
 function FriendScreen({ listFriends }: FriendScreenProps) {
+  const router = useRouter();
   return (
-
     <FlatList
       data={listFriends}
       keyExtractor={(_, index) => index.toString()}
@@ -27,10 +28,13 @@ function FriendScreen({ listFriends }: FriendScreenProps) {
           data={item.images}
           keyExtractor={(_, index) => index.toString()}
           renderItem={({ item }) => (
-              <Image
-                style={stylesMenu.friendSceneImage}
-                source={require('@/assets/images/FB_IMG_1725192745457.jpg')}
-              />
+            <TouchableOpacity onPress={() => {
+                router.push(`/mainScreen/postScreen?postId=${item.post_id}`)}}>
+                <Image
+                  style={stylesMenu.friendSceneImage}
+                  source={require('@/assets/images/FB_IMG_1725192745457.jpg')}
+                />
+              </TouchableOpacity>
           )}
           numColumns={3} 
           contentContainerStyle={stylesMenu.scene}

@@ -1,23 +1,35 @@
+import { useRouter } from "expo-router";
 import React from "react";
-import { View, Image, StyleSheet, FlatList, Dimensions } from "react-native";
+import {
+  View,
+  Image,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
 
 interface MeScreenProps {
-  myPosts: string[]; 
+  myPosts: any; 
+  openModal: () => void;
 }
 
 const { width } = Dimensions.get("window");
 
-
-function MeScreen({ myPosts }: MeScreenProps) {
+function MeScreen({ myPosts, openModal }: MeScreenProps) {
+  const router = useRouter();
   return (
     <FlatList
       data={myPosts}
-      keyExtractor={(_, index) => index.toString()}
-      renderItem={({ item }) => (
-        <Image
-          style={stylesMenu.sceneImage}
-          source={require('@/assets/images/FB_IMG_1725192745457.jpg')}
-        />
+      keyExtractor={(item) => item.post_id}
+      renderItem={({ item, index }) => (
+        <TouchableOpacity onPress={ () => {
+          router.push(`/mainScreen/postScreen?postId=${item.post_id}`)}}>
+          <Image
+            style={stylesMenu.sceneImage}
+            source={{uri: item.media}} 
+          />
+        </TouchableOpacity>
       )}
       numColumns={3} 
       contentContainerStyle={stylesMenu.scene}
@@ -37,7 +49,7 @@ const stylesMenu = StyleSheet.create({
     margin: width * 0.015,  
     borderRadius: 10,
     borderColor: "#fff",
-    borderWidth: 4
+    borderWidth: 4,
   },
 });
 
